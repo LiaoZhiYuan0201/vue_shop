@@ -4,9 +4,13 @@ import router from './router'
 import './plugins/element.js'
 import './assets/css/global.css'
 import axios from 'axios'
-
 //配置请求根路径
 axios.defaults.baseURL='http://42.192.40.14:8889/api/private/v1/'
+axios.interceptors.request.use(config=>{
+  config.headers.Authorization = window.sessionStorage.getItem('token')
+  //结束必须return config
+  return config
+})
 Vue.prototype.$http = axios
 
 Vue.config.productionTip = false
