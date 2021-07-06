@@ -48,7 +48,11 @@
         </el-table-column>
         <el-table-column label="操作" width="200px">
           <template slot-scope="scope">
-            <el-button type="primary" icon="el-icon-edit" size="mini"
+            <el-button
+              type="primary"
+              icon="el-icon-edit"
+              size="mini"
+              @click="showEditDialogVisible(scope.row.goods_id)"
               >修改</el-button
             >
             <el-button
@@ -73,6 +77,40 @@
         background
       >
       </el-pagination>
+      <!-- 修改商品 -->
+      <el-dialog title="修改商品" :visible.sync="editDialogVisible" width="50%">
+        <el-form
+          :model="editForm"
+          :rules="editFormRules"
+          ref="editFormRef"
+          label-width="100px"
+        >
+          <!-- <el-form-item label="商品Id" prop="goods_id">
+            <el-input v-model="editForm.goods_id" :disabled="true"></el-input>
+          </el-form-item> -->
+          <el-form-item label="商品名称" prop="goods_name">
+            <el-input v-model="editForm.goods_name"></el-input>
+          </el-form-item>
+          <el-form-item label="商品价格" prop="goods_price">
+            <el-input v-model="editForm.goods_price"></el-input>
+          </el-form-item>
+          <el-form-item label="商品数量" prop="goods_number">
+            <el-input v-model="editForm.goods_number"></el-input>
+          </el-form-item>
+          <el-form-item label="商品重量" prop="goods_weight">
+            <el-input v-model="editForm.goods_weight"></el-input>
+          </el-form-item>
+          <el-form-item label="商品分类">
+            <el-input v-model="editForm.goods_cat"></el-input>
+          </el-form-item>
+        </el-form>
+        <span slot="footer" class="dialog-footer">
+          <el-button @click="editDialogVisible = false">取 消</el-button>
+          <el-button type="primary" @click="putEditDialogVisible"
+            >确 定</el-button
+          >
+        </span>
+      </el-dialog>
     </el-card>
   </div>
 </template>
@@ -95,6 +133,28 @@ export default {
       goodsList: [],
       //总数据条数
       total: 0,
+      editDialogVisible: false,
+      editForm: {},
+      editlist: [],
+      editFormRules: {
+        // goods_id: [{ required: true }],
+        goods_name: [
+          { required: true, message: "请输入商品名称", trigger: "blur" },
+        ],
+        goods_price: [
+          { required: true, message: "请输入商品价格", trigger: "blur" },
+          { min: 1, message: "价格最少为一元" },
+        ],
+        goods_number: [
+          { required: true, message: "请输入商品数量", trigger: "blur" },
+        ],
+        goods_weight: [
+          { required: true, message: "请输入商品重量", trigger: "blur" },
+        ],
+        goods_cat: [
+          { required: true, message: "请输入商品分类", trigger: "blur" },
+        ],
+      },
     };
   },
   methods: {
@@ -106,6 +166,7 @@ export default {
       if (res.meta.status !== 200)
         return this.$message.error("获取商品列表失败");
       this.goodsList = res.data.goods;
+      this.editlist = res.data;
       this.total = res.data.total;
     },
     handleSizeChange(newSize) {
@@ -136,6 +197,41 @@ export default {
     },
     goAddpage() {
       this.$router.push("/goods/add");
+    },
+    async showEditDialogVisible(id) {
+      let { data: res } = await this.$http.get(`goods/${id}`);
+      if (res.meta.status !== 200)
+        return this.$message.error("获取商品列表失败");
+      this.editForm = res.data;
+      console.log(this.editForm);
+      this.editDialogVisible = true;
+      this.getGoodsList();
+    },
+    putEditDialogVisible() {
+      this.$refs.editFormRef.validate(async (valid) => {
+        if (!valid) return;
+        let { data: res } = await this.$http.put(
+          `goods/${this.editForm.goods_id}`,
+          {
+            goods_name: this.editForm.goods_name,
+            goods_price: this.editForm.goods_price,
+            goods_number: this.editForm.goods_number,
+            goods_weight: this.editForm.goods_weight,
+            goods_cat: this.editForm.goods_cat,
+          }
+          // this.editForm
+        );
+        console.log(res);
+        if (res.meta.status !== 200) return this.$message.error("修改数据失败");
+        this.$message.success("修改数据成功");
+        this.editDialogVisible = false;
+        this.getGoodsList();
+      });
+    },
+    handleChange() {
+      if (this.editForm.goods_cat.length !== 3) {
+        this.editForm.goods_cat = [];
+      }
     },
   },
   components: {},

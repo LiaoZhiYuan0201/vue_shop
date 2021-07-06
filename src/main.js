@@ -16,13 +16,25 @@ import 'quill/dist/quill.core.css'
 import 'quill/dist/quill.snow.css'
 import 'quill/dist/quill.bubble.css'
 
+//导入 Nprogress 对应的JS和CSS
+import Nprogress from 'nprogress'
+import 'nprogress/nprogress.css'
+
 //配置请求根路径
 axios.defaults.baseURL = 'https://lianghj.top:8888/api/private/v1/'
+//在request 拦截器中，展示进度条
 axios.interceptors.request.use(config => {
+  Nprogress.start();
   config.headers.Authorization = window.sessionStorage.getItem('token')
   //结束必须return config
   return config
 })
+//在response 拦截器中，隐藏进度条
+axios.interceptors.response.use(config => {
+  Nprogress.done();
+  return config
+})
+
 Vue.prototype.$http = axios
 
 Vue.config.productionTip = false
