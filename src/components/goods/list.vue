@@ -143,7 +143,6 @@ export default {
         ],
         goods_price: [
           { required: true, message: "请输入商品价格", trigger: "blur" },
-          { min: 1, message: "价格最少为一元" },
         ],
         goods_number: [
           { required: true, message: "请输入商品数量", trigger: "blur" },
